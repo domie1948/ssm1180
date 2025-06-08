@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.MianshiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.zhaopin_id as zhaopinId
+        ,a.mianshi_time as mianshiTime
+        ,a.mianshi_types as mianshiTypes
+        ,a.mianshi_content as mianshiContent
+        ,a.create_time as createTime
+    </sql>
+
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.MianshiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,zhaopin.name as name
+        ,zhaopin.phone as phone
+        ,zhaopin.id_number as idNumber
+        ,zhaopin.sex_types as sexTypes
+        ,zhaopin.my_photo as myPhoto
+        ,zhaopin.education_types as educationTypes
+        ,zhaopin.school as school
+
+        FROM mianshi  a
+        left JOIN zhaopin zhaopin ON a.zhaopin_id = zhaopin.id
+
+        <where>
+            <if test="params.zhaopinId != null">
+                and a.zhaopin_id = #{params.zhaopinId}
+            </if>
+            <if test=" params.mianshiTimeStart != '' and params.mianshiTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.mianshi_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.mianshiTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.mianshiTimeEnd != '' and params.mianshiTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.mianshi_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.mianshiTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.mianshiTypes != null">
+                and a.mianshi_types = #{params.mianshiTypes}
+            </if>
+            <if test="params.mianshiContentStart != null">
+                <![CDATA[  and a.mianshi_content >= #{params.mianshiContentStart}   ]]>
+            </if>
+            <if test="params.mianshiContentEnd != null">
+                <![CDATA[  and a.mianshi_content <= #{params.mianshiContentEnd}   ]]>
+            </if>
+
+            <if test=" params.name != '' and params.name != null and params.name != 'null' ">
+                and zhaopin.name like CONCAT('%',#{params.name},'%')
+            </if>
+            <if test=" params.phone != '' and params.phone != null and params.phone != 'null' ">
+                and zhaopin.phone like CONCAT('%',#{params.phone},'%')
+            </if>
+            <if test=" params.idNumber != '' and params.idNumber != null and params.idNumber != 'null' ">
+                and zhaopin.id_number like CONCAT('%',#{params.idNumber},'%')
+            </if>
+            <if test="params.sexTypes != null">
+                and zhaopin.sex_types = #{params.sexTypes}
+            </if>
+
+            <if test="params.educationTypes != null">
+                and zhaopin.education_types = #{params.educationTypes}
+            </if>
+
+            <if test=" params.school != '' and params.school != null and params.school != 'null' ">
+                and zhaopin.school like CONCAT('%',#{params.school},'%')
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+
+</mapper>
